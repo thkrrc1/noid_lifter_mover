@@ -129,7 +129,7 @@ def generate_launch_description():
             SetRemap(src='/scan', dst='scan'),
             SetRemap(src='/tf', dst='tf'),
             SetRemap(src='/tf_static', dst='tf_static'),
-            #SetRemap(src='/map', dst='map_nav'),
+            SetRemap(src='/map', dst='map_nav'),
 
             IncludeLaunchDescription(
                 PythonLaunchDescriptionSource(slam_online_sync_file),

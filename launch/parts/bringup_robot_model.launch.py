@@ -190,7 +190,7 @@ def launch_setup(context, *args, **kwargs):
             remappings=ctrl["remappings"]
         )
         actions.append(TimerAction(period=delay_sec, actions=[spawner]))
-        delay_sec += 0.2
+        delay_sec += 2.0
 
     non_priority_spawners = []
     for ctrl in non_priority_defs:

@@ -85,8 +85,8 @@
             joint_axis_xyz="1 0 0"
             joint_origin_xyz="0 ${0.022355 * reflect} -0.079645"
             joint_origin_rpy="0 0 0"
-            joint_lower_limit="${-0.905 - 0.035 * reflect }"
-            joint_upper_limit="${0.905 - 0.035 * reflect }"
+            joint_lower_limit="-1.0"
+            joint_upper_limit="1.0"
             joint_velocity_limit="0.5"
             joint_effort_limit="50" />
 

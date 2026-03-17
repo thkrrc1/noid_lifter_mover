@@ -10,7 +10,7 @@ from launch.actions import Shutdown
 
 def bringup_moveit(context, *args, **kwargs):
     pkg_name = kwargs["pkg_name"].perform(context)
-    xacro_settings = kwargs["xacro_settings"].perform(context)
+    xacro_setrings = kwargs["xacro_setrings"].perform(context)
     srdf_settings = kwargs["srdf_settings"].perform(context)
     kinematics_settings = kwargs["kinematics_settings"].perform(context)
     moveit_controller_settings = kwargs["moveit_controller_settings"].perform(context)
@@ -20,7 +20,7 @@ def bringup_moveit(context, *args, **kwargs):
     actions = []    
     moveit_config = (
         MoveItConfigsBuilder(robot_name=pkg_name, package_name=pkg_name)
-        .robot_description(file_path=xacro_settings)
+        .robot_description(file_path=xacro_setrings)
         .robot_description_semantic(file_path=srdf_settings)
         .robot_description_kinematics(file_path=kinematics_settings)
         .trajectory_execution(file_path=moveit_controller_settings)
@@ -35,11 +35,10 @@ def bringup_moveit(context, *args, **kwargs):
         package="moveit_ros_move_group",
         executable="move_group",
         output="screen",
-        sigterm_timeout="20",
-        sigkill_timeout="20",
         parameters=[
             moveit_config.to_dict()
         ],
+        on_exit=Shutdown(),
     )
     actions.append(move_group_node)    
     return actions
@@ -48,7 +47,7 @@ def generate_launch_description():
     pkg_name = LaunchConfiguration('pkg_name')
     pkg_name_arg = DeclareLaunchArgument('pkg_name')
     robot_pkg = FindPackageShare(pkg_name)
-    xacro_settings = PathJoinSubstitution([robot_pkg, 'model', 'noid_lifter_mover.urdf.xacro'])    
+    xacro_setrings = PathJoinSubstitution([robot_pkg, 'model', 'noid_lifter_mover.urdf.xacro'])    
     srdf_settings = PathJoinSubstitution([robot_pkg, 'moveit', 'config', 'SEED-Noid-Lifter-Mover-typeG.srdf'])
     kinematics_settings = PathJoinSubstitution([robot_pkg, 'moveit', 'config', 'kinematics.yaml'])
     moveit_controller_settings = PathJoinSubstitution([robot_pkg, 'moveit', 'config', 'moveit_controllers.yaml'])
@@ -65,7 +64,7 @@ def generate_launch_description():
                 function=bringup_moveit,
                 kwargs={
                     "pkg_name": pkg_name,
-                    "xacro_settings": xacro_settings,
+                    "xacro_setrings": xacro_setrings,
                     "srdf_settings": srdf_settings,
                     "kinematics_settings": kinematics_settings,
                     "moveit_controller_settings": moveit_controller_settings,

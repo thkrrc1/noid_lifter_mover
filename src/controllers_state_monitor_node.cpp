@@ -24,10 +24,6 @@ public:
       auto sub = create_subscription<lifecycle_msgs::msg::TransitionEvent>(
         "/" + name + "/transition_event", 10,
         [this, name](lifecycle_msgs::msg::TransitionEvent::SharedPtr msg) {
-          if (!rclcpp::ok()) {
-            return;
-          }
-
           if (msg->goal_state.label == "active") {
             RCLCPP_INFO(get_logger(), "%s is now ACTIVE", name.c_str());
             states_[name] = "active";
@@ -63,7 +59,6 @@ private:
   }
 
   void check_all_active() {
-    if (!rclcpp::ok()) return;
     if (launched_) return;
 
     std::vector<std::string> targets;
@@ -77,16 +72,13 @@ private:
 
     RCLCPP_INFO(get_logger(), "All nodes are ACTIVE. Launching Dummy_lidar...");
     
-    launched_ = true;
-    subs_.clear(); 
-    
     std::stringstream nav_cmd;
     nav_cmd << "ros2 launch " << robot_pkg_path_
             << "/launch/parts/bringup_dummy_lidar.launch.py "
             << "dummy_map:=" << dummy_map_ << " &";
     std::system(nav_cmd.str().c_str());
-
-    rclcpp::shutdown();
+    
+    launched_ = true;
   }
 
   std::vector<rclcpp::Subscription<lifecycle_msgs::msg::TransitionEvent>::SharedPtr> subs_;

@@ -1,7 +1,8 @@
 import yaml
+import os
 from ament_index_python.packages import get_package_share_directory
 from launch import LaunchDescription
-from launch.actions import DeclareLaunchArgument, TimerAction, IncludeLaunchDescription, OpaqueFunction
+from launch.actions import DeclareLaunchArgument, TimerAction, IncludeLaunchDescription, OpaqueFunction, GroupAction
 from launch.conditions import IfCondition, UnlessCondition 
 from launch.launch_description_sources import PythonLaunchDescriptionSource
 from launch_ros.actions import Node
@@ -9,6 +10,7 @@ from launch.event_handlers import OnProcessExit, OnProcessStart
 from launch_ros.substitutions import FindPackageShare
 from launch.substitutions import LaunchConfiguration, PathJoinSubstitution
 from launch.actions import RegisterEventHandler, Shutdown
+from launch_ros.parameter_descriptions import ParameterValue
 
 def bringup_rviz(robot_pkg, display_rviz2, context):
     rviz_config_file = PathJoinSubstitution([robot_pkg, "rviz", "rviz.rviz"]).perform(context)
@@ -84,6 +86,7 @@ def generate_launch_description():
             {'slam': slam_mode},
             {'map': read_map_yaml_file},
         ],
+        on_exit=Shutdown()
     )
     ld.add_action(bringup_nav_monitor_node)
     
@@ -142,7 +145,7 @@ def generate_launch_description():
             target_action=bringup_rviz2_monitor_node, 
             on_exit=[
                 TimerAction(
-                    period=2.0,
+                    period=5.0,
                     actions=[OpaqueFunction(
                         function=lambda context: bringup_rviz(robot_pkg, display_rviz2, context)
                     )]
@@ -150,5 +153,39 @@ def generate_launch_description():
             ],
         )
     ))
+
+    # slam:=true のときは localization を起動しない
+    localization_launch = GroupAction(
+        condition=UnlessCondition(slam_mode),
+        actions=[
+            call_launch(
+                "localization.launch.py",
+                ld,
+                robot_pkg,
+                extra_args={
+                    'use_composition': 'False',
+                    'params_file': PathJoinSubstitution([robot_pkg_path, 'config', 'navigation', 'localization.yaml']),
+                    'map': read_map_yaml_file,
+                    'use_sim_time': 'false',
+                    'autostart': 'true'
+                }
+            )
+        ]
+    )
+
+    ld.add_action(RegisterEventHandler(
+        OnProcessStart(
+            target_action=bringup_nav_monitor_node,
+            on_start=[localization_launch],
+        )
+    ))
+      
+    camera_launch = call_launch(
+        "bringup_camera.launch.py",
+        ld,
+        robot_pkg,
+        extra_args={'robot_pkg_path': PathJoinSubstitution([robot_pkg])}
+    )
+    ld.add_action(camera_launch)
 
     return ld

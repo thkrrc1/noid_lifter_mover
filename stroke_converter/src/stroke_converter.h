@@ -2,7 +2,6 @@
 
 #include <seed_ros2_controller/stroke_converter/stroke_converter_base.hpp>
 #include <ament_index_cpp/get_package_share_directory.hpp>
-#include <cmath>
 
 namespace seed_converter {
 
@@ -29,18 +28,10 @@ private:
 
     int16_t calcWheelAngDeg(int idx, int16_t raw_ang);
 
-    double quantize(double v, double res);
-
-    double clamp_quantize_inset(double v, double min, double max, double res);
-
 private:
     ConvertTable shoulder_p, shoulder_r, elbow_p, wrist_p, wrist_r, neck_p, neck_r, waist_p, waist_r, leg;
     std::string upper_csv_dir;
     std::string lifter_csv_dir;
-
-    static constexpr double LW_P_MIN = -0.08; //腰、手首差動関節の上限値
-    static constexpr double LW_P_MAX =  0.08; //腰、手首差動関節の下限値
-    static constexpr double RES = 1e-3; //分解能を下げる
 
     int16_t zero_ofst[4] = {0}; //ホイール角度ゼロのオフセット
     int16_t prev_wheel[4] = {0}; //ホイール角度ゼロのオフセット

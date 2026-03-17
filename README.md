@@ -76,4 +76,3 @@ b. 実機を使用して自律移動を実行する場合
 ```
 $ sudo apt install ros-jazzy-rqt-joint-trajectory-controller
 ```
-

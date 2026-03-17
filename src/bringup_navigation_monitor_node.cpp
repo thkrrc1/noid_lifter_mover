@@ -32,8 +32,6 @@ private:
         if (!triggered_) {
             triggered_ = true;
             RCLCPP_INFO(this->get_logger(), "/scan topic received, launching navigation");
-
-            sub_.reset();
   
             std::stringstream nav_cmd;
             if (simulation_) {

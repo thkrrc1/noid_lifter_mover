@@ -22,8 +22,8 @@ def bringup_dummy_lidar(dummy_map_file, description):
                 name='scan_map_server',
                 output='screen',
                 parameters=[{'yaml_filename': dummy_map_file}],
-                remappings=[('/map', '/scan_map')])
-                
+                remappings=[('/map', '/scan_map')],
+                on_exit=Shutdown())
     lifecycle = Node(
                  package='nav2_lifecycle_manager',
                  executable='lifecycle_manager',

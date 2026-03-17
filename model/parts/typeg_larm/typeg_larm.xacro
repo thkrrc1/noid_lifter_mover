@@ -20,7 +20,7 @@
          joint_axis_xyz="0 0.984808 -0.173648"
          joint_origin_xyz="0 0 0"
          joint_origin_rpy="0 0 0"
-         joint_lower_limit="-1.48"
+         joint_lower_limit="-1.55"
          joint_upper_limit="0.29"
          joint_velocity_limit="0.4"
          joint_effort_limit="10" />

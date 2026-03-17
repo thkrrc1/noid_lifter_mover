@@ -1,7 +1,6 @@
 planning_plugins:
   - ompl_interface/OMPLPlanner
 # The order of the elements in the adapter corresponds to the order they are processed by the motion planning pipeline.
-
 request_adapters:
   - default_planning_request_adapters/ResolveConstraintFrames
   - default_planning_request_adapters/ValidateWorkspaceBounds
@@ -145,7 +144,7 @@ planner_configs:
     type: geometric::TrajOpt
 
 rarm:
-  default_planner_config: "RRTConnect"
+  default_planner_config: RRTConnect
   planner_configs:
     - APS
     - SBL
@@ -176,7 +175,7 @@ rarm:
   longest_valid_segment_fraction: 0.005
 
 larm:
-  default_planner_config: "RRTConnect"
+  default_planner_config: RRTConnect
   planner_configs:
     - APS
     - SBL
@@ -207,7 +206,7 @@ larm:
   longest_valid_segment_fraction: 0.005
 
 waist:
-  default_planner_config: "RRTConnect"
+  default_planner_config: RRTConnect
   planner_configs:
     - APS
     - SBL
@@ -238,7 +237,7 @@ waist:
   longest_valid_segment_fraction: 0.005
  
 lifter:
-  default_planner_config: "RRTConnect"
+  default_planner_config: RRTConnect
   planner_configs:
     - APS
     - SBL
@@ -269,7 +268,7 @@ lifter:
   longest_valid_segment_fraction: 0.005
 
 rarm_with_waist:
-  default_planner_config: "RRTConnect"
+  default_planner_config: RRTConnect
   planner_configs:
     - APS
     - SBL
@@ -300,7 +299,7 @@ rarm_with_waist:
   longest_valid_segment_fraction: 0.005
 
 larm_with_waist:
-  default_planner_config: "RRTConnect"
+  default_planner_config: RRTConnect
   planner_configs:
     - APS
     - SBL
@@ -331,7 +330,7 @@ larm_with_waist:
   longest_valid_segment_fraction: 0.005
 
 rarm_with_torso:
-  default_planner_config: "RRTConnect"
+  default_planner_config: RRTConnect
   planner_configs:
     - APS
     - SBL
@@ -362,7 +361,7 @@ rarm_with_torso:
   longest_valid_segment_fraction: 0.005
 
 larm_with_torso:
-  default_planner_config: "RRTConnect"
+  default_planner_config: RRTConnect
   planner_configs:
     - APS
     - SBL
@@ -393,7 +392,7 @@ larm_with_torso:
   longest_valid_segment_fraction: 0.005
 
 head:
-  default_planner_config: "RRTConnect"
+  default_planner_config: RRTConnect
   planner_configs:
     - APS
     - SBL
@@ -423,7 +422,7 @@ head:
   projection_evaluator: joints(neck_y_joint,neck_p_joint)
   longest_valid_segment_fraction: 0.005
 rhand:
-  default_planner_config: "RRTConnect"
+  default_planner_config: ""
   planner_configs:
     - APS
     - SBL
@@ -451,7 +450,7 @@ rhand:
     - SPARStwo
     - TrajOpt
 lhand:
-  default_planner_config: "RRTConnect"
+  default_planner_config: ""
   planner_configs:
     - APS
     - SBL
@@ -479,7 +478,7 @@ lhand:
     - SPARStwo
     - TrajOpt
 torso:
-  default_planner_config: "RRTConnect"
+  default_planner_config: RRTConnect
   planner_configs:
     - APS
     - SBL
@@ -510,7 +509,7 @@ torso:
   longest_valid_segment_fraction: 0.005
 
 upper_body:
-  default_planner_config: "RRTConnect"
+  default_planner_config: ""
   planner_configs:
     - APS
     - SBL
@@ -541,7 +540,7 @@ upper_body:
   longest_valid_segment_fraction: 0.005
 
 whole_body:
-  default_planner_config: "RRTConnect"
+  default_planner_config: ""
   planner_configs:
     - APS
     - SBL

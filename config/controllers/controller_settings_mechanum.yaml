@@ -26,10 +26,7 @@ mechanum_controller:
                max_jerk: 25.0
       time:
          cmd_vel_timeout: 0.2 #[s]
-         teleop_sub_timeout: 0.1 #[s]        
-      encoder_reset:
-         enable: true  #encoder reset      
-         msid: 2       #mover   
+         teleop_sub_timeout: 0.1 #[s]      
 
 diagnostic_controller:
    ros__parameters:

@@ -27,19 +27,6 @@ void seed_converter::NoidLifterMover::makeTables() {
         makeInvTable(leg.inv_table, leg.table);
 }
 
-double seed_converter::NoidLifterMover::quantize(double v, double res)
-{
-  return std::round(v / res) * res;
-}
-
-double seed_converter::NoidLifterMover::clamp_quantize_inset(double v, double min, double max, double res)
-{
-  v = quantize(v, res);
-  if (v <= min) v = min + res;
-  if (v >= max) v = max - res;
-  return v;
-}
-
 int16_t seed_converter::NoidLifterMover::calcStroke1(double angle,double scale,double offset){
     static const double rad2Deg = 180.0 / M_PI;
     if (std::isnan(angle)) {
@@ -134,13 +121,13 @@ void seed_converter::NoidLifterMover::Stroke2Angle(std::vector<double> &_angles,
 
     _angles[idx_waist_y]      =  deg2Rad * scale_inv * _strokes[idx_waist_y];
     _angles[idx_waist_p]      =  deg2Rad * setStrokeToAngle(scale_inv * (_strokes[idx_waist_r] + _strokes[idx_waist_p]) * 0.5, waist_p.inv_table);
-    _angles[idx_waist_r]      =  clamp_quantize_inset(deg2Rad * setStrokeToAngle(scale_inv * (_strokes[idx_waist_r] - _strokes[idx_waist_p]) * 0.5, waist_r.inv_table), LW_P_MIN, LW_P_MAX, RES);
+    _angles[idx_waist_r]      =  deg2Rad * setStrokeToAngle(scale_inv * (_strokes[idx_waist_r] - _strokes[idx_waist_p]) * 0.5, waist_r.inv_table);
     _angles[idx_l_shoulder_p] = -deg2Rad * setStrokeToAngle(scale_inv * _strokes[idx_l_shoulder_p], shoulder_p.inv_table);
     _angles[idx_l_shoulder_r] =  deg2Rad * setStrokeToAngle(scale_inv * _strokes[idx_l_shoulder_r], shoulder_r.inv_table);
     _angles[idx_l_shoulder_y] = -deg2Rad * scale_inv * _strokes[idx_l_shoulder_y];
     _angles[idx_l_elbow]      = -(M_PI / 2) + deg2Rad * setStrokeToAngle(scale_inv * _strokes[idx_l_elbow], elbow_p.inv_table);
     _angles[idx_l_wrist_y]    = -deg2Rad * scale_inv * _strokes[idx_l_wrist_y];
-    _angles[idx_l_wrist_p]    = clamp_quantize_inset(-deg2Rad * setStrokeToAngle(scale_inv * (_strokes[idx_l_wrist_r] - _strokes[idx_l_wrist_p]) * 0.5, wrist_p.inv_table), LW_P_MIN, LW_P_MAX, RES);
+    _angles[idx_l_wrist_p]    = -deg2Rad * setStrokeToAngle(scale_inv * (_strokes[idx_l_wrist_r] - _strokes[idx_l_wrist_p]) * 0.5, wrist_p.inv_table);
     _angles[idx_l_wrist_r]    = -deg2Rad * setStrokeToAngle(scale_inv * (_strokes[idx_l_wrist_r] + _strokes[idx_l_wrist_p]) * 0.5, wrist_r.inv_table);
     _angles[idx_l_thumb]      =  deg2Rad * (scale_inv * _strokes[idx_l_thumb] * 5.556 - 50.0);
 
@@ -153,7 +140,7 @@ void seed_converter::NoidLifterMover::Stroke2Angle(std::vector<double> &_angles,
     _angles[idx_r_shoulder_y] = -deg2Rad * scale_inv * _strokes[idx_r_shoulder_y];
     _angles[idx_r_elbow]      = -(M_PI / 2) + deg2Rad * setStrokeToAngle(scale_inv * _strokes[idx_r_elbow], elbow_p.inv_table);
     _angles[idx_r_wrist_y]    = -deg2Rad * scale_inv * _strokes[idx_r_wrist_y];
-    _angles[idx_r_wrist_p]    =  clamp_quantize_inset(deg2Rad * setStrokeToAngle(scale_inv * (_strokes[idx_r_wrist_r] - _strokes[idx_r_wrist_p]) * 0.5, wrist_p.inv_table), LW_P_MIN, LW_P_MAX, RES);
+    _angles[idx_r_wrist_p]    =  deg2Rad * setStrokeToAngle(scale_inv * (_strokes[idx_r_wrist_r] - _strokes[idx_r_wrist_p]) * 0.5, wrist_p.inv_table);
     _angles[idx_r_wrist_r]    =  deg2Rad * setStrokeToAngle(scale_inv * (_strokes[idx_r_wrist_r] + _strokes[idx_r_wrist_p]) * 0.5, wrist_r.inv_table);
     _angles[idx_r_thumb]      = -deg2Rad * (scale_inv * _strokes[idx_r_thumb] * 5.556 - 50.0);
 
