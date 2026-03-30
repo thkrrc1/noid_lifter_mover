@@ -3,10 +3,9 @@
 ## 1.noid_lifter_moverインストール
 1. [seed_robot_ros2_pkg](https://github.com/thkrrc1/seed_robot_ros2_pkg)のREADMEに従ってプロジェクトをクローンする。
 
-2. 上記README内、**3.seed_robot_ros2_pkgインストール**の**5.ロボットプロジェクトのクローン**にて、*noid_lifter_mover*を入力してクローンする。
+2. *noid_lifter_mover*をクローンする。
     ```
-    $ python3 clone_robots.py
-    クローンしたいロボット名を入力してください：　noid_lifter_mover
+    $ git clone -b sgs2 https://github.com/thkrrc1/noid_lifter_mover.git
     ```
     
 以降は用途に応じて下記の作業に従ってください。  
