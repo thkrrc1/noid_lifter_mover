@@ -28,7 +28,7 @@
 
 2. 地図データの保存（地図ファイルは**launchファイルを起動した場所**に保存されます。）
 ```
- $ ros2 run noid_lifter_mover save_map_client_node --ros-args -p map_topic:=map_nav -p map_url:=（.map/.yamlのファイル名）
+ $ ros2 run noid_lifter_mover save_map_client_node --ros-args -p map_topic:=map -p map_url:=（.map/.yamlのファイル名）
 ```
 
 ## 3.amclを利用した自律移動
