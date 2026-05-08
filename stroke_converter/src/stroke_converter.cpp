@@ -103,7 +103,7 @@ void seed_converter::NoidLifterMover::Angle2Stroke(std::vector<int16_t> &_stroke
     calcStroke3(_angles[idx_waist_p],_angles[idx_waist_r],scale,1,-1,waist_p.table, waist_r.table, false,_strokes[idx_waist_p],_strokes[idx_waist_r]);
     calcStroke3(_angles[idx_l_wrist_p],_angles[idx_l_wrist_r],scale,1,-1,wrist_p.table, wrist_r.table, true,_strokes[idx_l_wrist_p],_strokes[idx_l_wrist_r]);
     calcStroke3(_angles[idx_neck_p],_angles[idx_neck_r],scale,1,-1,neck_p.table, neck_r.table, false,_strokes[idx_neck_r],_strokes[idx_neck_p]);
-    calcStroke3(_angles[idx_r_wrist_p],_angles[idx_r_wrist_r],scale,-1,1,wrist_p.table, wrist_r.table, true,_strokes[idx_r_wrist_p],_strokes[idx_r_wrist_r]);
+    calcStroke3(_angles[idx_r_wrist_p],_angles[idx_r_wrist_r],scale,1,-1,wrist_p.table, wrist_r.table, true,_strokes[idx_r_wrist_p],_strokes[idx_r_wrist_r]);
 }
 
 //無限回転ホイールの回転角度を求める(-180 ~ 180度)
@@ -153,7 +153,7 @@ void seed_converter::NoidLifterMover::Stroke2Angle(std::vector<double> &_angles,
     _angles[idx_r_shoulder_y] = -deg2Rad * scale_inv * _strokes[idx_r_shoulder_y];
     _angles[idx_r_elbow]      = -(M_PI / 2) + deg2Rad * setStrokeToAngle(scale_inv * _strokes[idx_r_elbow], elbow_p.inv_table);
     _angles[idx_r_wrist_y]    = -deg2Rad * scale_inv * _strokes[idx_r_wrist_y];
-    _angles[idx_r_wrist_p]    =  clamp_quantize_inset(deg2Rad * setStrokeToAngle(scale_inv * (_strokes[idx_r_wrist_r] - _strokes[idx_r_wrist_p]) * 0.5, wrist_p.inv_table), LW_P_MIN, LW_P_MAX, RES);
+    _angles[idx_r_wrist_p]    =  clamp_quantize_inset(-deg2Rad * setStrokeToAngle(scale_inv * (_strokes[idx_r_wrist_r] - _strokes[idx_r_wrist_p]) * 0.5, wrist_p.inv_table), LW_P_MIN, LW_P_MAX, RES);
     _angles[idx_r_wrist_r]    =  deg2Rad * setStrokeToAngle(scale_inv * (_strokes[idx_r_wrist_r] + _strokes[idx_r_wrist_p]) * 0.5, wrist_r.inv_table);
     _angles[idx_r_thumb]      = -deg2Rad * (scale_inv * _strokes[idx_r_thumb] * 5.556 - 50.0);
 
