@@ -4,6 +4,7 @@ joint_state_broadcaster:
        
       interfaces:
          - position
+         - velocity
 
       joint_not_publish:
          - wheel_front_left

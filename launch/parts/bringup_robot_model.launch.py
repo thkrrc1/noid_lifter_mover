@@ -2,23 +2,41 @@ import os
 import shutil
 import yaml
 import time
+import getpass
+from pathlib import Path
 from distutils.util import strtobool
 from ament_index_python.packages import get_package_share_directory
 from launch import LaunchDescription
 from launch.conditions import IfCondition
-from launch.actions import IncludeLaunchDescription, OpaqueFunction, TimerAction, DeclareLaunchArgument
+from launch.actions import IncludeLaunchDescription, OpaqueFunction, TimerAction, DeclareLaunchArgument, RegisterEventHandler
 from launch.launch_description_sources import PythonLaunchDescriptionSource
 from launch.substitutions import PathJoinSubstitution, Command, FindExecutable, LaunchConfiguration
 from launch_ros.actions import Node
 from launch_ros.substitutions import FindPackageShare
+from launch.event_handlers import OnProcessExit
 from rclpy.node import Node as RclpyNode
 
 
+SPAWNER_COMMON_TIMEOUT_ARGS = [
+    "--controller-manager", "/controller_manager",
+    "--controller-manager-timeout", "5",
+    "--service-call-timeout", "5",
+    "--switch-timeout", "5",
+]
+
 def replace_usb_settings(fpath_in, fpath_out):
+    
+    colcon_path = os.environ.get("COLCON_PREFIX_PATH")
+    if colcon_path is None:
+        raise RuntimeError("COLCON_PREFIX_PATH is not set. Please source install/setup.bash first.")
+
+    first_prefix = colcon_path.split(os.pathsep)[0]
+    workspace = Path(first_prefix).parent
+
     with open(fpath_in) as in_file:
         config = yaml.safe_load(in_file)
     for usb_setting in config["usb_settings"]:
-        usb_setting["port"] = "./tmp" + usb_setting["port"]
+        usb_setting["port"] =str(workspace / ".tmp") + usb_setting["port"]
     with open(fpath_out, "w") as out_file:
         yaml.dump(config, out_file, default_flow_style=False)
 
@@ -47,170 +65,129 @@ def interpret_robot_model(driver_settings_file, robot_pkg):
     return robot_description
 
 
-def bringup_stub(driver_settings_file, description, condition):
+def bringup_stub(driver_settings_file, condition):
     ms_stub_node = Node(
         package="ms_stub",
-        name='ms_stub',
         executable="ms_stub",
+        name='ms_stub',
         arguments=[driver_settings_file],
         output="screen",
         condition=condition,
     )
-    description.add_action(ms_stub_node)
+    return ms_stub_node
 
-
-def call_launch(name, description, robot_pkg, delay_time=0, extra_args=None):
-    launch_arguments = {
-        'robot_pkg_path': PathJoinSubstitution([robot_pkg])
-    }
-    if extra_args:
-        launch_arguments.update(extra_args)
-
-    launch_file_path = PathJoinSubstitution([
-        robot_pkg,
-        'launch',
-        'parts',
-        name
-    ])
-
-    action = IncludeLaunchDescription(
-        PythonLaunchDescriptionSource(launch_file_path),
-        launch_arguments=[(key, value) for key, value in launch_arguments.items()]
+def bringup_joint_state(joint_state_settings_file):
+    joint_state_broadcaster_node = Node(
+        package="controller_manager",
+        executable="spawner",
+        name='joint_state_broadcaster_spawner',
+        arguments=[
+                "joint_state_broadcaster",
+                *SPAWNER_COMMON_TIMEOUT_ARGS,
+                "-p", joint_state_settings_file
+        ],
+        output="screen",
     )
-    if delay_time != 0:
-        delayed_controller_node = TimerAction(
-            period=delay_time,
-            actions=[action]
-        )
-        description.add_action(delayed_controller_node)
-    else:
-        description.add_action(action)
+    return joint_state_broadcaster_node
+
+def bringup_mechanum(mechanum_settings_file):
+    mechanum_controller_node =  Node(
+        package="controller_manager",
+        executable="spawner",
+        name="mechanum_controller_spawner",
+        output="screen",
+        arguments=[
+            "mechanum_controller",
+            *SPAWNER_COMMON_TIMEOUT_ARGS,
+            "-p", mechanum_settings_file
+        ],
+        remappings=[("~/cmd_vel", "/cmd_vel_nav")]
+    )
+    return mechanum_controller_node
+
+def bringup_ros2_control(controller_settings):
+    ros2_control = Node(
+        package="controller_manager",
+        executable="ros2_control_node",
+        name="controller_manager",
+        output="screen",
+        parameters=[controller_settings],
+        remappings=[
+            ("~/robot_description", "/robot_description"),
+            ("/mechanum_controller/cmd_vel_nav", "/cmd_vel_nav"),
+        ],
+    )
+    return ros2_control
+
+def make_batched_spawner(name, controller_names, param_file, remappings=None):
+    if remappings is None:
+        remappings = []
+
+    return Node(
+        package="controller_manager",
+        executable="spawner",
+        name=name,
+        output="screen",
+        arguments=[
+            *controller_names,
+            *SPAWNER_COMMON_TIMEOUT_ARGS,
+            "--activate-as-group",
+            "-p", param_file,
+        ],
+        remappings=remappings,
+    )
 
 
 def launch_setup(context, *args, **kwargs):
     pkg_name = kwargs["pkg_name"]
     robot_pkg = FindPackageShare(pkg_name).perform(context)
 
-    controller_defs = [
-        {
-            "name": "rarm_controller",
-            "param_file": os.path.join(robot_pkg, "config", "controllers", "controller_settings_joint_trajectory.yaml"),
-            "remappings": []
-        },
-        {
-            "name": "larm_controller",
-            "param_file": os.path.join(robot_pkg, "config", "controllers", "controller_settings_joint_trajectory.yaml"),
-            "remappings": []
-        },
-        {
-            "name": "head_controller",
-            "param_file": os.path.join(robot_pkg, "config", "controllers", "controller_settings_joint_trajectory.yaml"),
-            "remappings": []
-        },
-        {
-            "name": "waist_controller",
-            "param_file": os.path.join(robot_pkg, "config", "controllers", "controller_settings_joint_trajectory.yaml"),
-            "remappings": []
-        },
-        {
-            "name": "lifter_controller",
-            "param_file": os.path.join(robot_pkg, "config", "controllers", "controller_settings_joint_trajectory.yaml"),
-            "remappings": []
-        },
-        {
-            "name": "rhand_controller",
-            "param_file": os.path.join(robot_pkg, "config", "controllers", "controller_settings_joint_trajectory.yaml"),
-            "remappings": []
-        },
-        {
-            "name": "lhand_controller",
-            "param_file": os.path.join(robot_pkg, "config", "controllers", "controller_settings_joint_trajectory.yaml"),
-            "remappings": []
-        },
-        {
-            "name": "joint_state_broadcaster",
-            "param_file": os.path.join(robot_pkg, "config", "controllers", "controller_settings_joint_state.yaml"),
-            "remappings": []
-        },
-        {
-            "name": "mechanum_controller",
-            "param_file": os.path.join(robot_pkg, "config", "controllers", "controller_settings_mechanum.yaml"),
-            "remappings": [("~/cmd_vel", "/cmd_vel_nav")]
-        },
-        {
-            "name": "diagnostic_controller",
-            "param_file": os.path.join(robot_pkg, "config", "controllers", "controller_settings_mechanum.yaml"),
-            "remappings": []
-        },
-        {
-            "name": "aero_controller",
-            "param_file": os.path.join(robot_pkg, "config", "controllers", "controller_settings_mechanum.yaml"),
-            "remappings": []
-        },
-        {
-            "name": "status_controller",
-            "param_file": os.path.join(robot_pkg, "config", "controllers", "controller_settings_mechanum.yaml"),
-            "remappings": []
-        },
-        {
-            "name": "robotstatus_controller",
-            "param_file": os.path.join(robot_pkg, "config", "controllers", "controller_settings_mechanum.yaml"),
-            "remappings": []
-        },
-        {
-            "name": "motion_player",
-            "param_file": os.path.join(robot_pkg, "config", "controllers", "controller_settings_mechanum.yaml"),
-            "remappings": []
-        },
-        {
-            "name": "config_controller",
-            "param_file": os.path.join(robot_pkg, "config", "controllers", "controller_settings_mechanum.yaml"),
-            "remappings": []
-        },
+    jt_setting_file = os.path.join(
+        robot_pkg, "config", "controllers", "controller_settings_joint_trajectory.yaml"
+    )
+
+    mech_setting_file = os.path.join(
+        robot_pkg, "config", "controllers", "controller_settings_mechanum.yaml"
+    )
+
+    priority_controllers = [
+        "larm_controller", "rarm_controller", "lifter_controller", "head_controller", "lhand_controller", "rhand_controller", "waist_controller",
     ]
 
-    priority_controllers = ["mechanum_controller", "joint_state_broadcaster", "lifter_controller", "lhand_controller",  "rhand_controller", "waist_controller", "head_controller", "larm_controller", "rarm_controller"]
-    priority_defs = [ctrl for ctrl in controller_defs if ctrl["name"] in priority_controllers]
-    non_priority_defs = [ctrl for ctrl in controller_defs if ctrl["name"] not in priority_controllers]
+    non_priority_controllers = [
+        "diagnostic_controller",
+        "status_controller",
+        "robotstatus_controller",
+        "config_controller",
+        "aero_controller",
+        "current_controller",
+    ]
 
-    actions = []
+    priority_spawner = make_batched_spawner(
+        name="priority_batch_1_spawner",
+        controller_names=priority_controllers,
+        param_file=jt_setting_file,
+    )
 
-    delay_sec = 0.0
-    for ctrl in priority_defs:
-        spawner = Node(
-            package="controller_manager",
-            executable="spawner",
-            name=f"{ctrl['name']}_spawner",
-            output="screen",
-            arguments=[
-                ctrl["name"],
-                "--controller-manager", "/controller_manager",
-                "-p", ctrl["param_file"]
-            ],
-            remappings=ctrl["remappings"]
+    non_priority_spawner = make_batched_spawner(
+        name="non_priority_batch_spawner",
+        controller_names=non_priority_controllers,
+        param_file=mech_setting_file,
+    )
+
+    # priority側が完了した後にnon-priority側を起動する
+    non_priority_after_priority = RegisterEventHandler(
+        OnProcessExit(
+            target_action=priority_spawner,
+            on_exit=[non_priority_spawner],
         )
-        actions.append(TimerAction(period=delay_sec, actions=[spawner]))
-        delay_sec += 0.2
+    )
 
-    non_priority_spawners = []
-    for ctrl in non_priority_defs:
-        spawner = Node(
-            package="controller_manager",
-            executable="spawner",
-            name=f"{ctrl['name']}_spawner",
-            output="screen",
-            arguments=[
-                ctrl["name"],
-                "--controller-manager", "/controller_manager",
-                "-p", ctrl["param_file"]
-            ],
-            remappings=ctrl["remappings"]
-        )
-        non_priority_spawners.append(spawner)
-
-    actions.append(TimerAction(period=delay_sec, actions=non_priority_spawners))
-
-    return actions
+    # イベントハンドラを先に登録する
+    return [
+        non_priority_after_priority,
+        priority_spawner,
+    ]
 
 
 def generate_launch_description():
@@ -225,26 +202,11 @@ def generate_launch_description():
     driver_settings_raw = PathJoinSubstitution([robot_pkg, 'config', 'driver_settings.yaml'])
     driver_settings = PathJoinSubstitution([robot_pkg, 'config', 'driver_settings_tmp.yaml'])
     controller_settings = PathJoinSubstitution([robot_pkg, 'config', 'controller_settings.yaml'])
-    teleop_settings = PathJoinSubstitution([robot_pkg, 'config', 'teleop', 'teleop_settings.yaml'])
-    lidar_settings = PathJoinSubstitution([robot_pkg, 'config', 'laser', 'laser_filter.yaml'])
+    controller_settings_joint_state = PathJoinSubstitution([robot_pkg, 'config', 'controllers', 'controller_settings_joint_state.yaml'])
+    controller_settings_mechanum = PathJoinSubstitution([robot_pkg, 'config', 'controllers', 'controller_settings_mechanum.yaml'])
 
     ld = LaunchDescription()
-    ld.add_action(simulation_arg)
     ld.add_action(pkg_name_arg)
-
-    ld.add_action(Node(
-        package=pkg_name,
-        executable="tf_static_monitor_node",
-        name="tf_static_monitor_node",
-        output="screen",
-    ))
-    ld.add_action(Node(
-        package=pkg_name,
-        executable="tf_static_ready_monitor_node",
-        name="tf_static_ready_monitor_node",
-        output="screen",
-        parameters=[{'cm_param_path': controller_settings}, {'teleop_param_path': teleop_settings}, {'lidar_param_path': lidar_settings}, {'simulation': simulation}],
-    ))
 
     ld.add_action(OpaqueFunction(function=load_driver_settings, kwargs={
         "driver_settings_raw": driver_settings_raw,
@@ -261,8 +223,14 @@ def generate_launch_description():
         parameters=[robot_description],
     ))
 
-    bringup_stub(driver_settings, ld, condition=IfCondition(simulation))
+    stub_node = bringup_stub(driver_settings, condition=IfCondition(simulation))
+    joint_state_node = bringup_joint_state(controller_settings_joint_state)
+    mechanum_node = bringup_mechanum(controller_settings_mechanum)
+    ros2_control_node = bringup_ros2_control(controller_settings)
 
-    ld.add_action(OpaqueFunction(function=launch_setup, kwargs={"pkg_name": pkg_name}))
-
+    ld.add_action(stub_node)
+    ld.add_action(ros2_control_node)
+    ld.add_action(joint_state_node) 
+    ld.add_action(RegisterEventHandler(OnProcessExit(target_action=joint_state_node, on_exit=[mechanum_node],)))
+    ld.add_action(RegisterEventHandler(OnProcessExit(target_action=mechanum_node, on_exit=[OpaqueFunction(function=launch_setup, kwargs={"pkg_name": pkg_name})],)))
     return ld

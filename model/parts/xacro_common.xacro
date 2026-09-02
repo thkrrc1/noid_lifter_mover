@@ -31,7 +31,7 @@
             <child link="${child}" />
 
             <origin xyz="${joint_origin_xyz}" rpy="${joint_origin_rpy}" />
-            <xacro:unless value="${type=='fixed' or mimic}">
+            <xacro:unless value="${type=='fixed' or type=='continuous'}">
                 <limit effort="${joint_effort_limit}" velocity="${joint_velocity_limit}" lower="${joint_lower_limit}" upper="${joint_upper_limit}" />
             </xacro:unless>
             <xacro:if value="${mimic}">

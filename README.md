@@ -28,7 +28,7 @@
 
 2. 地図データの保存（地図ファイルは**launchファイルを起動した場所**に保存されます。）
 ```
- $ ros2 run noid_lifter_mover save_map_client_node --ros-args -p map_topic:=map -p map_url:=（.map/.yamlのファイル名）
+ $ ros2 run noid_lifter_mover save_map_client_node --ros-args -p map_topic:=map_nav -p map_url:=（.map/.yamlのファイル名）
 ```
 
 ## 3.amclを利用した自律移動
@@ -75,5 +75,41 @@ b. 実機を使用して自律移動を実行する場合
 - rqt-joint-trajectory-controller（noid,lifterの関節角度を変化させる）
 ```
 $ sudo apt install ros-jazzy-rqt-joint-trajectory-controller
+```
+
+- 力覚センサーを使用する場合、udev設定が必要になります。
+  PCに力覚センサーのみを接続した状態で、下記コマンド等で力覚センサー情報を取得してください。
+```
+udevadm info /dev/ttyUSB0
+```
+```
+・出力例
+: SUBSYSTEM=tty
+E: USEC_INITIALIZED=51553776270
+E: ID_BUS=usb
+E: ID_MODEL=FT232R_USB_UART
+E: ID_MODEL_ENC=FT232R\x20USB\x20UART
+E: ID_MODEL_ID=6001
+E: ID_SERIAL=FTDI_FT232R_USB_UART_AU0JZRBL
+E: ID_SERIAL_SHORT=AU0JZRBL
+E: ID_VENDOR=FTDI
+E: ID_VENDOR_ENC=FTDI
+E: ID_VENDOR_ID=0403
+```
+udevファイルを作成します。
+```
+sudo -E gedit /etc/udev/rules.d/92-device.rules
+```
+
+下記を記入してください。（idVendor、idProduct、serialに上記で取得した情報を記入）
+
+左右のアーム両方に力覚センサーが取り付けられている場合、/dev/force_sensor_right、/dev/force_sensor_leftとして
+デバイスの登録をしてください。
+```
+# force sensor device right
+SUBSYSTEM=="tty",ATTRS{idVendor}=="0403",ATTRS{idProduct}=="6001",ATTRS{serial}=="AU0JZRBL",MODE="666",SYMLINK+="force_sensor_right", RUN+="/bin/setserial /dev/force_sensor_right low_latency"
+
+# force sensor device left
+SUBSYSTEM=="tty",ATTRS{idVendor}=="0403",ATTRS{idProduct}=="6001",ATTRS{serial}=="AU0K0F8F",MODE="666",SYMLINK+="force_sensor_left", RUN+="/bin/setserial /dev/force_sensor_left low_latency"
 ```
 

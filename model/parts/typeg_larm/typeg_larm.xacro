@@ -9,8 +9,7 @@
       name="typeg-larm"
       params="base_link tip_link">
       
-      <link name="${base_link}">
-      </link>
+      <link name="${base_link}" />
       
       <xacro:armjoint
          joint_name="l_shoulder_p_joint"
@@ -22,7 +21,7 @@
          joint_origin_rpy="0 0 0"
          joint_lower_limit="-1.48"
          joint_upper_limit="0.29"
-         joint_velocity_limit="0.4"
+         joint_velocity_limit="0.8"
          joint_effort_limit="10" />
       
       <xacro:armlink
@@ -42,7 +41,7 @@
          joint_origin_rpy="0 0 0"
          joint_lower_limit="-0.08"
          joint_upper_limit="1.57"
-         joint_velocity_limit="0.5"
+         joint_velocity_limit="1.0"
          joint_effort_limit="10" />
          
       <xacro:armlink
@@ -62,7 +61,7 @@
          joint_origin_rpy="0 0 0"
          joint_lower_limit="-1.57"
          joint_upper_limit="1.57"
-         joint_velocity_limit="1.1"
+         joint_velocity_limit="2.2"
          joint_effort_limit="10" />
 
       <xacro:armlink
@@ -78,11 +77,11 @@
          parent="l_upperarm_link"
          child="l_elbow_virtual_link"
          joint_axis_xyz="0 1 0"
-         joint_origin_xyz="0.0 0 -0.2085"
+         joint_origin_xyz="0.0 0 -0.2385"
          joint_origin_rpy="0 0 0"
          joint_lower_limit="-3.0"
          joint_upper_limit="0"
-         joint_velocity_limit="1.1"
+         joint_velocity_limit="2.2"
          joint_effort_limit="10" />
 
       <link name="l_elbow_virtual_link">
@@ -154,7 +153,7 @@
          joint_origin_rpy="0 0 0"
          joint_lower_limit="-1.57"
          joint_upper_limit="1.57"
-         joint_velocity_limit="1.2"
+         joint_velocity_limit="2.4"
          joint_effort_limit="10" />
 
       <xacro:armlink
@@ -165,42 +164,42 @@
          base_origin_rpy="0 0 0" />
 
       <xacro:armjoint
-         joint_name="l_wrist_p_joint"
+         joint_name="l_wrist_r_joint"
          type="revolute"
          parent="l_forearm_link"
-         child="l_wrist_center"
-         joint_axis_xyz="0 1 0"
+         child="l_wrist_r_link"
+         joint_axis_xyz="1 0 0"
          joint_origin_xyz="0 0 -0.124"
          joint_origin_rpy="0 0 0"
-         joint_lower_limit="-0.08"
-         joint_upper_limit="0.08"
-         joint_velocity_limit="0.8"
+         joint_lower_limit="-0.73"
+         joint_upper_limit="0.52"
+         joint_velocity_limit="3.6"
          joint_effort_limit="10" />
 
       <xacro:armlink
          model_type="typeg_larm"
-         link_name="l_wrist_center"
-         mesh_name="l_wrist_center_link"
+         link_name="l_wrist_r_link"
+         mesh_name="l_wrist_r_link"
          base_origin_xyz="0 0 0"
          base_origin_rpy="0 0 0" />
 
       <xacro:armjoint
-         joint_name="l_wrist_r_joint"
+         joint_name="l_wrist_p_joint"
          type="revolute"
-         parent="l_wrist_center"
-         child="l_wrist_r_link"
-         joint_axis_xyz="1 0 0"
+         parent="l_wrist_r_link"
+         child="l_wrist_p_link"
+         joint_axis_xyz="0 1 0"
          joint_origin_xyz="0 0 0"
          joint_origin_rpy="0 0 0"
          joint_lower_limit="-1.57"
-         joint_upper_limit="0.0"
-         joint_velocity_limit="1.8"
+         joint_upper_limit="1.57"
+         joint_velocity_limit="3.6"
          joint_effort_limit="10" />
 
       <xacro:armlink
          model_type="typeg_larm"
          link_name="${tip_link}"
-         mesh_name="l_wrist_r_link"
+         mesh_name="l_wrist_p_link"
          base_origin_xyz="0 0 0"
          base_origin_rpy="0 0 0" />
 

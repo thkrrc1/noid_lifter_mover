@@ -10,18 +10,20 @@ if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
 endif()
 
 find_package(ament_cmake REQUIRED)
-find_package(pluginlib REQUIRED)
-find_package(seed_ros2_controller REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(std_msgs REQUIRED)
-find_package(tf2_msgs REQUIRED)
-find_package(ament_index_cpp REQUIRED)
+find_package(geometry_msgs REQUIRED)
+find_package(sensor_msgs REQUIRED)
+find_package(trajectory_msgs REQUIRED)
+find_package(rclcpp_action REQUIRED)
 find_package(nav2_msgs REQUIRED)
 find_package(lifecycle_msgs REQUIRED)
 find_package(controller_manager_msgs REQUIRED)
+find_package(tf2_msgs REQUIRED)
 find_package(tf2_ros REQUIRED)
-find_package(sensor_msgs REQUIRED)
-find_package(rclcpp_action REQUIRED)
+find_package(ament_index_cpp REQUIRED)
+find_package(seed_ros2_controller REQUIRED)
+find_package(pluginlib REQUIRED)
 find_package(moveit_msgs REQUIRED)
 
 set(STROKE_CONVERTER ${PROJECT_NAME}_stroke_converter)
@@ -61,70 +63,26 @@ ament_export_targets(export_${PROJECT_NAME})
 
 pluginlib_export_plugin_description_file(seed_ros2_controller stroke_converter/plugin_description.xml)
 
-add_executable(tf_static_monitor_node src/tf_static_monitor_node.cpp)
-add_executable(tf_static_ready_monitor_node src/tf_static_ready_monitor_node.cpp)
 add_executable(save_map_client_node src/save_map_client_node.cpp)
-add_executable(bringup_navigation_monitor_node src/bringup_navigation_monitor_node.cpp)
-add_executable(amcl_state_monitor_node src/amcl_state_monitor_node.cpp)
-add_executable(controllers_state_monitor_node src/controllers_state_monitor_node.cpp)
-add_executable(bringup_moveit_monitor_node src/bringup_moveit_monitor_node.cpp)
-add_executable(bringup_rviz2_monitor_node src/bringup_rviz2_monitor_node.cpp)
-
-ament_target_dependencies(bringup_rviz2_monitor_node
-  rclcpp
-  rclcpp_action
-  moveit_msgs
-)
-
-ament_target_dependencies(tf_static_monitor_node
-  rclcpp
-  std_msgs
-  tf2_msgs
-)
-
-ament_target_dependencies(tf_static_ready_monitor_node
-  rclcpp
-  std_msgs
-  ament_index_cpp
-)
+add_executable(lifter_controller_node src/lifter_controller_node.cpp)
 
 ament_target_dependencies(save_map_client_node
   rclcpp
   nav2_msgs
 )
 
-ament_target_dependencies(bringup_navigation_monitor_node
+ament_target_dependencies(lifter_controller_node
   rclcpp
+  std_msgs
+  geometry_msgs
   sensor_msgs
-)
-
-ament_target_dependencies(bringup_moveit_monitor_node
-  rclcpp
-  lifecycle_msgs
-  controller_manager_msgs
-  std_msgs
-)
-
-ament_target_dependencies(controllers_state_monitor_node
-  rclcpp
-  lifecycle_msgs
-  std_msgs
-)
-
-ament_target_dependencies(amcl_state_monitor_node
-  rclcpp
-  lifecycle_msgs
+  rclcpp_action
+  trajectory_msgs
 )
 
 install(TARGETS
-  tf_static_monitor_node
-  tf_static_ready_monitor_node
   save_map_client_node
-  bringup_navigation_monitor_node
-  controllers_state_monitor_node
-  amcl_state_monitor_node
-  bringup_rviz2_monitor_node
-  bringup_moveit_monitor_node
+  lifter_controller_node
   DESTINATION lib/${PROJECT_NAME}
 )
 

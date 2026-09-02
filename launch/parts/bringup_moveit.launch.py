@@ -35,8 +35,8 @@ def bringup_moveit(context, *args, **kwargs):
         package="moveit_ros_move_group",
         executable="move_group",
         output="screen",
-        sigterm_timeout="20",
-        sigkill_timeout="20",
+        sigterm_timeout="30",
+        sigkill_timeout="30",
         parameters=[
             moveit_config.to_dict()
         ],

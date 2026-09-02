@@ -1,6 +1,6 @@
 controller_manager:
    ros__parameters:
-      update_rate: 50 # Hz
+      update_rate: 100 # Hz
       lock_memory: false
       enable_performance_metrics: true
       converter_lib: seed_converter/NoidLifterMover

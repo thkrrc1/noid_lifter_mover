@@ -2,9 +2,9 @@ bt_navigator:
    ros__parameters:
       global_frame: map
       robot_base_frame: base_link
-      odom_topic: /mechanum_controller/odometry
-      default_nav_to_pose_bt_xml: /opt/ros/jazzy/share/nav2_bt_navigator/behavior_trees/navigate_to_pose_w_replanning_and_recovery.xml
-      default_nav_through_poses_bt_xml: /opt/ros/jazzy/share/nav2_bt_navigator/behavior_trees/navigate_to_pose_w_replanning_and_recovery.xml
+      odom_topic: /mechanum_controller/odometry      
+      default_nav_to_pose_bt_xml: /opt/ros/jazzy/share/nav2_bt_navigator/behavior_trees/navigate_w_replanning_speed.xml
+      default_nav_through_poses_bt_xml: /opt/ros/jazzy/share/nav2_bt_navigator/behavior_trees/navigate_w_replanning_speed.xml
       bt_loop_duration: 10
       default_server_timeout: 20
       enable_groot_monitoring: true
@@ -39,29 +39,33 @@ controller_server:
       general_goal_checker:
          stateful: false #True
          plugin: nav2_controller::SimpleGoalChecker
-         xy_goal_tolerance: 0.1 #0.25
-         yaw_goal_tolerance: 0.2 #0.25
+         xy_goal_tolerance: 0.05 #0.25
+         yaw_goal_tolerance: 0.02 #0.25
       FollowPath:
         plugin: "nav2_mppi_controller::MPPIController"
         time_steps: 30 #56
         model_dt: 0.1 #0.05
         batch_size: 2000 
-        ax_min:  -3.0 #3.0
-        ax_max:  3.0 #-3.0
-        ay_max:  3.0 #3.0
-        az_max:  3.5 #3.5
-        vx_std:  0.2 #0.2
-        vy_std:  0.05 #0.2
-        wz_std:  0.4 #0.4
-        vx_max:  0.65 #0.5
-        vx_min:  -0.0 #-0.35
-        vy_max:  0.2 #0.5
-        wz_max:  2.0 #1.9
-        iteration_count: 2
+
+        ax_min: -5.0
+        ax_max:  3.0
+        ay_min: -1.5
+        ay_max:  1.5
+        az_max:  4.0
+
+        vx_std: 0.3
+        vy_std: 0.1
+        wz_std: 0.15
+
+        vx_max: 0.45
+        vx_min: -0.25
+        vy_max: 0.12
+        wz_max: 0.8
+        iteration_count: 1
         prune_distance: 3.0 #1.7
         transform_tolerance: 0.3
-        temperature: 1.0 #0.3
-        gamma: 0.0 #0.015
+        temperature: 0.5 #0.3
+        gamma: 0.05 #0.015
         motion_model: "Omni"
         visualize: false #true
         regenerate_noises: true 
@@ -73,45 +77,45 @@ controller_server:
         inversion_xy_tolerance: 0.2
         inversion_yaw_tolerance: 0.4
         critics: ["ObstaclesCritic", "GoalCritic", "GoalAngleCritic", "PathFollowCritic", "PathAngleCritic", "PreferForwardCritic"]
-        GoalCritic:
-          enabled: true
-          cost_power: 1
-          cost_weight: 16.5 #5.0
-          threshold_to_consider: 0.5 #1.4
+
         GoalAngleCritic:
           enabled: true
           cost_power: 1
-          cost_weight: 10.0 #3.0
-          threshold_to_consider: 0.3
+          cost_weight: 50.0
+          threshold_to_consider: 0.5 # コスト計算を開始する、ロボットとゴールとの距離
+        GoalCritic:
+          enabled: true
+          cost_power: 1
+          cost_weight: 50.0
+          threshold_to_consider: 0.5 # コスト計算を開始する、ロボットとゴールとの距離
         PathFollowCritic:
           enabled: true
           cost_power: 1
-          cost_weight: 100.0 #5.0
-          offset_from_furthest: 4 #5
-          threshold_to_consider: 0.1 # 1.4
+          cost_weight: 50.0
+          offset_from_furthest: 10
+          threshold_to_consider: 0.5 # 計算を停止する、ゴールとの距離
         PathAngleCritic:
           enabled: true
           cost_power: 1
-          cost_weight: 25.0 #2.0
-          offset_from_furthest: 4 #4
+          cost_weight: 50.0 #2.0
+          offset_from_furthest: 10 #4
           threshold_to_consider: 0.5
-          max_angle_to_furthest: 0.15 #1.0
-          mode: 0 #0
+          max_angle_to_furthest: 0.1 #1.0
+          mode: 1 #0
         PreferForwardCritic:
-          enabled: true
+          enabled: false
           cost_power: 1
-          cost_weight: 30.0
-          threshold_to_consider: 0.15
-        ObstaclesCritic:
+          cost_weight: 50.0
+        ObstaclesCritic: # 障害物回避コスト
           enabled: true
           cost_power: 1
           consider_footprint: true
-          critical_weight: 66.0
-          repulsion_weight: 5.0
-          collision_cost: 100000.0
-          collision_margin_distance: 0.3
-          near_goal_distance: 0.3
-          inflation_layer_name: "inflation_layer"
+          critical_weight:  60.0
+          repulsion_weight: 30.0
+          collision_cost: 100000000000000.0
+          collision_margin_distance: 0.05 # critical_weight版を使うときの障害物の距離
+          near_goal_distance: 0.5
+          inflation_layer_name: ""
            
 local_costmap:
    local_costmap:
@@ -122,8 +126,8 @@ local_costmap:
          robot_base_frame: base_link
          use_sim_time: false
          rolling_window: true
-         width: 3
-         height: 3
+         width: 5
+         height: 5
          resolution: 0.01 #0.05
          footprint: '[[-0.34, -0.2], [-0.34, 0.2], [0.34, 0.2], [0.34, -0.2]]'
          plugins: ["static_layer", "obstacle_layer", "inflation_layer"]
@@ -158,8 +162,8 @@ local_costmap:
          inflation_layer:
             plugin: nav2_costmap_2d::InflationLayer
             enabled: true
-            inflation_radius: 0.2 #0.70
-            cost_scaling_factor: 5.0 #3.0
+            inflation_radius: 0.5 #0.70
+            cost_scaling_factor: 10.0 #3.0
          always_send_full_costmap: true
          
 global_costmap:
@@ -196,8 +200,8 @@ global_costmap:
          inflation_layer:
             plugin: nav2_costmap_2d::InflationLayer
             enabled: true
-            inflation_radius: 0.3 #0.7
-            cost_scaling_factor: 10.0 #3.0
+            inflation_radius: 1.0
+            cost_scaling_factor: 10.0
          always_send_full_costmap: true
 
 planner_server:
@@ -213,24 +217,16 @@ planner_server:
 
 behavior_server:
   ros__parameters:
-    local_costmap_topic: local_costmap/costmap_raw
-    global_costmap_topic: global_costmap/costmap_raw
-    local_footprint_topic: local_costmap/published_footprint
-    global_footprint_topic: global_costmap/published_footprint
+    costmap_topic: local_costmap/costmap
+    footprint_topic: local_costmap/published_footprint
     cycle_frequency: 10.0
-    behavior_plugins: ["spin", "backup", "drive_on_heading", "wait"]
-    spin:
-      plugin: "nav2_behaviors::Spin"
-    backup:
-      plugin: "nav2_behaviors::BackUp"
-    drive_on_heading:
-      plugin: "nav2_behaviors::DriveOnHeading"
+    behavior_plugins: ["wait"]
     wait:
       plugin: "nav2_behaviors::Wait"
-    local_frame: odom
-    global_frame: map
+    global_frame: odom
     robot_base_frame: base_link
-    transform_tolerance: 0.3
+    transform_tolerance: 0.1
+    use_sim_time: true
     simulate_ahead_time: 2.0
     max_rotational_vel: 1.0
     min_rotational_vel: 0.4

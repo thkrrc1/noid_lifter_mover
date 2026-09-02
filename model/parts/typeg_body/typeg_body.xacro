@@ -7,12 +7,7 @@
 
     <xacro:macro name="typeg-body" params="base_link">
 
-      <xacro:armlink
-         model_type="typeg_body"
-         link_name="${base_link}"
-         mesh_name="waist_link"
-         base_origin_xyz="0 0 0"
-         base_origin_rpy="0 0 0" />
+      <link name="${base_link}" />
       
       <xacro:armjoint
          joint_name="waist_y_joint"
@@ -20,13 +15,12 @@
          parent="${base_link}"
          child="hip_sphere_link"
          joint_axis_xyz="0 0 1"
-         joint_origin_xyz="0 0 0.005"
+         joint_origin_xyz="0 0 0"
          joint_origin_rpy="0 0 0"
          joint_lower_limit="-2.09"
          joint_upper_limit="2.09"
          joint_velocity_limit="0.6"
          joint_effort_limit="10" />
-      
 
       <xacro:armlink
          model_type="typeg_body"
@@ -41,15 +35,14 @@
          parent="hip_sphere_link"
          child="hip_center"
          joint_axis_xyz="0 1 0"
-         joint_origin_xyz="0 0 0.132"
+         joint_origin_xyz="0 0 0.0655"
          joint_origin_rpy="0 0 0"
          joint_lower_limit="0.0"
-         joint_upper_limit="0.43"
+         joint_upper_limit="0.66"
          joint_velocity_limit="0.4"
          joint_effort_limit="10" />
 
-      <link name="hip_center">
-      </link>
+      <link name="hip_center" />
 
       <xacro:armjoint
          joint_name="waist_r_joint"
@@ -146,6 +139,16 @@
             <child link="chest_camera_right_ir_frame" />
             <origin xyz="0 -0.055 0" rpy="0 0 0" />  <!-- realsense d415 -->
         </joint>
+
+      <xacro:armjoint
+            joint_name="head_camera_position"
+            type="fixed"
+            parent="head_link"
+            child="head_camera_link"
+            joint_origin_xyz="0.1516 0 0"
+            joint_origin_rpy="0 0 0" />
+
+        <link name="head_camera_link" />
 
     </xacro:macro>
 </root>

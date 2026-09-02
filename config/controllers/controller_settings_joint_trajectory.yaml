@@ -16,15 +16,15 @@ rarm_controller:
      state_interfaces:
        - position
 
-     action_monitor_rate: 20.0
+     action_monitor_rate: 50.0
+     allow_partial_joints_goal: true
      set_last_command_interface_value_as_state_on_activation: false
      interpolate_from_desired_state: true
      open_loop_control: true
      allow_integration_in_goal_trajectories: true
-     stop_trajectory_duration: 0.4
      constraints:
        goal_time: 1.0
-       stopped_velocity_tolerance: 0.01
+       stopped_velocity_tolerance: 0.02
 
 larm_controller:
    ros__parameters:
@@ -44,13 +44,12 @@ larm_controller:
      state_interfaces:
        - position
 
-     action_monitor_rate: 20.0
+     action_monitor_rate: 50.0
      allow_partial_joints_goal: true
      set_last_command_interface_value_as_state_on_activation: false
      interpolate_from_desired_state: true
      open_loop_control: true
      allow_integration_in_goal_trajectories: true
-     stop_trajectory_duration: 0.4
      constraints:
        goal_time: 1.0
        stopped_velocity_tolerance: 0.02
@@ -69,13 +68,12 @@ head_controller:
      state_interfaces:
        - position
 
-     action_monitor_rate: 20.0
+     action_monitor_rate: 50.0
      allow_partial_joints_goal: true
      set_last_command_interface_value_as_state_on_activation: false
      interpolate_from_desired_state: true
      open_loop_control: true
      allow_integration_in_goal_trajectories: true
-     stop_trajectory_duration: 0.4
      constraints:
        goal_time: 1.0
        stopped_velocity_tolerance: 0.02
@@ -94,13 +92,12 @@ waist_controller:
      state_interfaces:
        - position
 
-     action_monitor_rate: 20.0
+     action_monitor_rate: 50.0
      allow_partial_joints_goal: true
      set_last_command_interface_value_as_state_on_activation: false
      interpolate_from_desired_state: true
      open_loop_control: true
      allow_integration_in_goal_trajectories: true
-     stop_trajectory_duration: 0.4
      constraints:
        goal_time: 1.0
        stopped_velocity_tolerance: 0.02
@@ -118,13 +115,12 @@ lifter_controller:
      state_interfaces:
        - position
 
-     action_monitor_rate: 20.0
+     action_monitor_rate: 50.0
      allow_partial_joints_goal: true
      set_last_command_interface_value_as_state_on_activation: false
      interpolate_from_desired_state: true
      open_loop_control: true
      allow_integration_in_goal_trajectories: true
-     stop_trajectory_duration: 0.4
      constraints:
        goal_time: 1.0
        stopped_velocity_tolerance: 0.02
@@ -141,13 +137,12 @@ rhand_controller:
      state_interfaces:
        - position
 
-     action_monitor_rate: 20.0
+     action_monitor_rate: 50.0
      allow_partial_joints_goal: true
      set_last_command_interface_value_as_state_on_activation: false
      interpolate_from_desired_state: true
      open_loop_control: true
      allow_integration_in_goal_trajectories: true
-     stop_trajectory_duration: 0.4
      constraints:
        goal_time: 1.0
        stopped_velocity_tolerance: 0.02
@@ -164,13 +159,12 @@ lhand_controller:
      state_interfaces:
        - position
 
-     action_monitor_rate: 20.0
+     action_monitor_rate: 50.0
      allow_partial_joints_goal: true
      set_last_command_interface_value_as_state_on_activation: false
      interpolate_from_desired_state: true
      open_loop_control: true
      allow_integration_in_goal_trajectories: true
-     stop_trajectory_duration: 0.4
      constraints:
        goal_time: 1.0
        stopped_velocity_tolerance: 0.02

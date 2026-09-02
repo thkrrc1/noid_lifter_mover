@@ -122,6 +122,12 @@ def generate_launch_description():
         actions=[
             SetParameter('use_sim_time', use_sim_time),
             Node(
+                package="dummy_scan",
+                executable="init_pose_pub",
+                name='init_pose_pub',
+                output="screen",
+            ),
+            Node(
                 condition=IfCondition(
                     EqualsSubstitution(LaunchConfiguration('map'), '')
                 ),
@@ -179,6 +185,12 @@ def generate_launch_description():
         condition=IfCondition(use_composition),
         actions=[
             SetParameter('use_sim_time', use_sim_time),
+            Node(
+                package="dummy_scan",
+                executable="init_pose_pub",
+                name='init_pose_pub',
+                output="screen",
+            ),
             LoadComposableNodes(
                 target_container=container_name_full,
                 condition=IfCondition(

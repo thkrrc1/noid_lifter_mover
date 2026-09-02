@@ -179,7 +179,7 @@ def generate_launch_description():
                 PythonLaunchDescriptionSource(
                     PathJoinSubstitution([robot_pkg, 'launch', 'parts','slam_toolbox.launch.py'])
                 ),
-                condition=IfCondition(PythonExpression([slam, ' and ', use_localization])),
+                condition=IfCondition(PythonExpression(["'", slam, "'.lower() == 'true' and '", use_localization, "'.lower() == 'true'"])),
                 launch_arguments={
                     'use_sim_time': use_sim_time,
                     'params_file': slam_toolbox_params_file,
@@ -189,7 +189,7 @@ def generate_launch_description():
                 PythonLaunchDescriptionSource(
                     PathJoinSubstitution([robot_pkg, 'launch', 'parts','localization.launch.py'])
                 ),
-                condition=IfCondition(PythonExpression(['not ', slam, ' and ', use_localization])),
+                condition=IfCondition(PythonExpression(["'", slam, "'.lower() != 'true' and '", use_localization, "'.lower() == 'true'"])),
                 launch_arguments={
                     'namespace': namespace,
                     'map': map_yaml_file,

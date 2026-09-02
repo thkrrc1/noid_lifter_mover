@@ -1,0 +1,126 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<root xmlns:xacro="http://ros.org/wiki/xacro">
+    <xacro:arg name="parts_dir" default="../" />
+
+    <xacro:include filename="$(arg parts_dir)/xacro_common.xacro" />
+
+    <xacro:macro
+        name="airoa_hand"
+        params="prefix:=1 base_link:=hand_link">
+
+        <xacro:armlink
+            model_type="airoa_hand"
+            link_name="${base_link}"
+            mesh_name="hand_base_link"
+            base_origin_xyz="0 0 0"
+            base_origin_rpy="0 0 0" />
+
+        <!--joint_lower_limit = (-(モータ角度0°の開口幅)-0.01)/2-->
+        <!--joint_upper_limit = ((最大開口幅)-(モータ角度0°の開口幅)+0.01)/2-->
+        <xacro:armjoint
+            joint_name="${prefix}_thumb_joint"
+            type="prismatic"
+            parent="${base_link}"
+            child="${prefix}_l_finger_link"
+            joint_axis_xyz="0 1 0"
+            joint_origin_xyz="0 0 -0.0963"
+            joint_origin_rpy="0 0 0"
+            joint_lower_limit="-0.028665"
+            joint_upper_limit="0.05068"
+            joint_velocity_limit="1.0"
+            joint_effort_limit="50" />
+
+        <xacro:armlink
+            model_type="airoa_hand"
+            link_name="${prefix}_l_finger_link"
+            mesh_name="l_finger_link"
+            base_origin_xyz="0 0 0"
+            base_origin_rpy="0 0 0" />
+
+        <xacro:armjoint
+            joint_name="${prefix}_thumb_joint_mimic"
+            type="prismatic"
+            parent="${base_link}"
+            child="${prefix}_r_finger_link"
+            joint_axis_xyz="0 1 0"
+            joint_origin_xyz="0 0 -0.0963"
+            joint_origin_rpy="0 0 0"
+            joint_lower_limit="-0.05068"
+            joint_upper_limit="0.028665"
+            joint_velocity_limit="1.0"
+            joint_effort_limit="50"
+            mimic_parent="${prefix}_thumb_joint"
+            mimic_multiplier="-1"
+            mimic_offset="0"
+            mimic="true" />
+
+        <xacro:armlink
+            model_type="airoa_hand"
+            link_name="${prefix}_r_finger_link"
+            mesh_name="r_finger_link"
+            base_origin_xyz="0 0 0"
+            base_origin_rpy="0 0 0" />
+
+        <xacro:armjoint
+            joint_name="${prefix}_eef_grasp_joint"
+            type="fixed"
+            parent="${base_link}"
+            child="${prefix}_eef_grasp_link"
+            joint_origin_xyz="0 0 -0.14"
+            joint_origin_rpy="0 0 0" />
+
+        <link name="${prefix}_eef_grasp_link" />
+
+        <xacro:armjoint
+            joint_name="${prefix}_eef_pick_joint"
+            type="fixed"
+            parent="${base_link}"
+            child="${prefix}_eef_pick_link"
+            joint_origin_xyz="0 0 -0.19"
+            joint_origin_rpy="0 0 0" />
+
+        <link name="${prefix}_eef_pick_link" />
+
+        <xacro:armjoint
+            joint_name="${prefix}_l_tip_joint"
+            type="fixed"
+            parent="${prefix}_l_finger_link"
+            child="${prefix}_l_tip_link"
+            joint_origin_xyz="0 0.023 -0.1165"
+            joint_origin_rpy="0 0 0" />
+
+        <link name="${prefix}_l_tip_link" />
+
+        <xacro:armjoint
+            joint_name="${prefix}_r_tip_joint"
+            type="fixed"
+            parent="${prefix}_r_finger_link"
+            child="${prefix}_r_tip_link"
+            joint_origin_xyz="0 -0.023 -0.1165"
+            joint_origin_rpy="0 0 0" />
+
+        <link name="${prefix}_r_tip_link" />
+
+        <xacro:armjoint
+            joint_name="${prefix}_hand_camera_position"
+            type="fixed"
+            parent="${base_link}"
+            child="${prefix}_hand_camera_link"
+            joint_origin_xyz="0.095967 0 -0.1048842"
+            joint_origin_rpy="0 2.182 0" />
+
+        <link name="${prefix}_hand_camera_link" />
+
+        <xacro:armjoint
+            joint_name="${prefix}_force_senoser_detection_center"
+            type="fixed"
+            parent="${base_link}"
+            child="${prefix}_force_senoser_detection_center_link"
+            joint_origin_xyz="0.0 0 -0.011"
+            joint_origin_rpy="${pi} 0 ${-pi/2}" />
+
+        <link name="${prefix}_force_senoser_detection_center_link" />
+
+    </xacro:macro>
+</root>

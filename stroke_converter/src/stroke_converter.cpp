@@ -11,10 +11,10 @@ void seed_converter::NoidLifterMover::makeTables() {
         makeInvTable(shoulder_r.inv_table, shoulder_r.table);
     if (makeTable(elbow_p.table, upper_csv_dir + "/elbow_p.csv"))
         makeInvTable(elbow_p.inv_table, elbow_p.table);
-    if (makeTable(wrist_p.table, upper_csv_dir + "/wrist_p.csv"))
-        makeInvTable(wrist_p.inv_table, wrist_p.table);
-    if (makeTable(wrist_r.table, upper_csv_dir + "/wrist_r.csv"))
-        makeInvTable(wrist_r.inv_table, wrist_r.table);
+    if (makeTable(l_wrist_r.table, upper_csv_dir + "/l_wrist_r.csv"))
+        makeInvTable(l_wrist_r.inv_table, l_wrist_r.table);
+    if (makeTable(r_wrist_r.table, upper_csv_dir + "/r_wrist_r.csv"))
+        makeInvTable(r_wrist_r.inv_table, r_wrist_r.table);
     if (makeTable(neck_p.table, upper_csv_dir + "/neck_p.csv"))
         makeInvTable(neck_p.inv_table, neck_p.table);
     if (makeTable(neck_r.table, upper_csv_dir + "/neck_r.csv"))
@@ -88,8 +88,23 @@ void seed_converter::NoidLifterMover::Angle2Stroke(std::vector<int16_t> &_stroke
     _strokes[idx_r_shoulder_y] = calcStroke1(_angles[idx_r_shoulder_y],-scale,0);
     _strokes[idx_l_wrist_y] = calcStroke1(_angles[idx_l_wrist_y],-scale,0);
     _strokes[idx_r_wrist_y]    = calcStroke1(_angles[idx_r_wrist_y],-scale,0);
-    _strokes[idx_l_thumb]      = calcStroke1(_angles[idx_l_thumb],scale*0.18,50);
-    _strokes[idx_r_thumb]      = calcStroke1(_angles[idx_r_thumb],-scale*0.18,-50);
+    _strokes[idx_l_wrist_p] = calcStroke1(_angles[idx_l_wrist_p],scale,0);
+    _strokes[idx_r_wrist_p] = calcStroke1(_angles[idx_r_wrist_p],-scale,0);
+
+    if (!std::isfinite(_angles[idx_l_thumb])) {
+        _strokes[idx_l_thumb] = 0x7FFF;
+    } else if (_angles[idx_l_thumb] >= 0) {
+        _strokes[idx_l_thumb] = static_cast<int16_t>(scale * (_angles[idx_l_thumb] * 55.47 / 0.05068));
+    } else {
+        _strokes[idx_l_thumb] = static_cast<int16_t>(scale * (_angles[idx_l_thumb] * 44.8 / 0.028665));
+    }
+    if (!std::isfinite(_angles[idx_r_thumb])) {
+        _strokes[idx_r_thumb] = 0x7FFF;
+    } else if(_angles[idx_r_thumb] >= 0) {
+        _strokes[idx_r_thumb] = static_cast<int16_t>(scale * (_angles[idx_r_thumb] * 55.47 / 0.05068));
+    } else {
+        _strokes[idx_r_thumb] = static_cast<int16_t>(scale * (_angles[idx_r_thumb] * 44.8 / 0.028665));
+    }
 
     _strokes[idx_l_shoulder_p] = calcStroke2(_angles[idx_l_shoulder_p],scale,-1,0, shoulder_p.table);
     _strokes[idx_r_shoulder_p] = calcStroke2(_angles[idx_r_shoulder_p],scale,-1,0, shoulder_p.table);
@@ -99,11 +114,11 @@ void seed_converter::NoidLifterMover::Angle2Stroke(std::vector<int16_t> &_stroke
     _strokes[idx_r_elbow]      = calcStroke2(_angles[idx_r_elbow],scale,1,90, elbow_p.table);
     _strokes[idx_knee] = calcStroke2(_angles[idx_knee],scale,-1,0, leg.table);
     _strokes[idx_ankle] = calcStroke2(_angles[idx_ankle],scale,1,0, leg.table);
+    _strokes[idx_l_wrist_r] = calcStroke2(_angles[idx_l_wrist_r],scale,-1,0, l_wrist_r.table);
+    _strokes[idx_r_wrist_r] = calcStroke2(_angles[idx_r_wrist_r],scale,-1,0, r_wrist_r.table);
 
     calcStroke3(_angles[idx_waist_p],_angles[idx_waist_r],scale,1,-1,waist_p.table, waist_r.table, false,_strokes[idx_waist_p],_strokes[idx_waist_r]);
-    calcStroke3(_angles[idx_l_wrist_p],_angles[idx_l_wrist_r],scale,1,-1,wrist_p.table, wrist_r.table, true,_strokes[idx_l_wrist_p],_strokes[idx_l_wrist_r]);
-    calcStroke3(_angles[idx_neck_p],_angles[idx_neck_r],scale,1,-1,neck_p.table, neck_r.table, false,_strokes[idx_neck_r],_strokes[idx_neck_p]);
-    calcStroke3(_angles[idx_r_wrist_p],_angles[idx_r_wrist_r],scale,1, 1,wrist_p.table, wrist_r.table, true,_strokes[idx_r_wrist_p],_strokes[idx_r_wrist_r]);
+    calcStroke3(_angles[idx_neck_p],_angles[idx_neck_r],scale,1,-1,neck_p.table, neck_r.table, false,_strokes[idx_neck_p],_strokes[idx_neck_r]);
 }
 
 //無限回転ホイールの回転角度を求める(-180 ~ 180度)
@@ -140,22 +155,30 @@ void seed_converter::NoidLifterMover::Stroke2Angle(std::vector<double> &_angles,
     _angles[idx_l_shoulder_y] = -deg2Rad * scale_inv * _strokes[idx_l_shoulder_y];
     _angles[idx_l_elbow]      = -(M_PI / 2) + deg2Rad * setStrokeToAngle(scale_inv * _strokes[idx_l_elbow], elbow_p.inv_table);
     _angles[idx_l_wrist_y]    = -deg2Rad * scale_inv * _strokes[idx_l_wrist_y];
-    _angles[idx_l_wrist_p]    = clamp_quantize_inset(-deg2Rad * setStrokeToAngle(scale_inv * (_strokes[idx_l_wrist_r] - _strokes[idx_l_wrist_p]) * 0.5, wrist_p.inv_table), LW_P_MIN, LW_P_MAX, RES);
-    _angles[idx_l_wrist_r]    = -deg2Rad * setStrokeToAngle(scale_inv * (_strokes[idx_l_wrist_r] + _strokes[idx_l_wrist_p]) * 0.5, wrist_r.inv_table);
-    _angles[idx_l_thumb]      =  deg2Rad * (scale_inv * _strokes[idx_l_thumb] * 5.556 - 50.0);
+    _angles[idx_l_wrist_r]    = -deg2Rad * setStrokeToAngle(scale_inv * _strokes[idx_l_wrist_r], l_wrist_r.inv_table);
+    _angles[idx_l_wrist_p]    = deg2Rad * scale_inv * _strokes[idx_l_wrist_p];
+    if(_strokes[idx_l_thumb] >= 0) {
+        _angles[idx_l_thumb] =  scale_inv * _strokes[idx_l_thumb] * 0.05068 / 55.47;
+    } else {
+        _angles[idx_l_thumb] =  scale_inv * _strokes[idx_l_thumb] * 0.028665 / 44.8;
+    }
 
     _angles[idx_neck_y] =  deg2Rad * scale_inv * _strokes[idx_neck_y];
     _angles[idx_neck_p] =  deg2Rad * setStrokeToAngle(scale_inv * (_strokes[idx_neck_r] + _strokes[idx_neck_p]) * 0.5, neck_p.inv_table);
-    _angles[idx_neck_r] = -deg2Rad * setStrokeToAngle(scale_inv * (_strokes[idx_neck_r] - _strokes[idx_neck_p]) * 0.5, neck_r.inv_table);
+    _angles[idx_neck_r] =  deg2Rad * setStrokeToAngle(scale_inv * (_strokes[idx_neck_r] - _strokes[idx_neck_p]) * 0.5, neck_r.inv_table);
 
     _angles[idx_r_shoulder_p] = -deg2Rad * setStrokeToAngle(scale_inv * _strokes[idx_r_shoulder_p], shoulder_p.inv_table);
     _angles[idx_r_shoulder_r] = -deg2Rad * setStrokeToAngle(scale_inv * _strokes[idx_r_shoulder_r], shoulder_r.inv_table);
     _angles[idx_r_shoulder_y] = -deg2Rad * scale_inv * _strokes[idx_r_shoulder_y];
     _angles[idx_r_elbow]      = -(M_PI / 2) + deg2Rad * setStrokeToAngle(scale_inv * _strokes[idx_r_elbow], elbow_p.inv_table);
     _angles[idx_r_wrist_y]    = -deg2Rad * scale_inv * _strokes[idx_r_wrist_y];
-    _angles[idx_r_wrist_p]    =  clamp_quantize_inset(-deg2Rad * setStrokeToAngle(scale_inv * (_strokes[idx_r_wrist_r] - _strokes[idx_r_wrist_p]) * 0.5, wrist_p.inv_table), LW_P_MIN, LW_P_MAX, RES);
-    _angles[idx_r_wrist_r]    =  deg2Rad * setStrokeToAngle(scale_inv * (_strokes[idx_r_wrist_r] + _strokes[idx_r_wrist_p]) * 0.5, wrist_r.inv_table);
-    _angles[idx_r_thumb]      = -deg2Rad * (scale_inv * _strokes[idx_r_thumb] * 5.556 - 50.0);
+    _angles[idx_r_wrist_r]    =  -deg2Rad * setStrokeToAngle(scale_inv * _strokes[idx_r_wrist_r], r_wrist_r.inv_table);
+    _angles[idx_r_wrist_p]    =  -deg2Rad * scale_inv * _strokes[idx_r_wrist_p];
+    if(_strokes[idx_r_thumb] >= 0) {
+        _angles[idx_r_thumb] =  scale_inv * _strokes[idx_r_thumb] * 0.050680 / 55.47;
+    } else {
+        _angles[idx_r_thumb] =  scale_inv * _strokes[idx_r_thumb] * 0.028665 / 44.8;
+    }
 
     _angles[idx_knee] = -deg2Rad * setStrokeToAngle(scale_inv * _strokes[idx_knee], leg.inv_table);  // knee
     _angles[idx_ankle] = deg2Rad * setStrokeToAngle(scale_inv * _strokes[idx_ankle], leg.inv_table);  // ankle

@@ -6,10 +6,10 @@
 
     <xacro:include filename="$(arg parts_dir)/typeg_lifter/typeg_lifter.xacro" />
     <xacro:include filename="$(arg parts_dir)/typeg_mover/typeg_mover.xacro" />
-    <xacro:include filename="$(arg parts_dir)/trx_s/trx_s.xacro" />
     <xacro:include filename="$(arg parts_dir)/typeg_body/typeg_body.xacro" />
     <xacro:include filename="$(arg parts_dir)/typeg_larm/typeg_larm.xacro" />
     <xacro:include filename="$(arg parts_dir)/typeg_rarm/typeg_rarm.xacro" />
+    <xacro:include filename="$(arg parts_dir)/airoa_hand/airoa_hand.xacro" />
     
     <xacro:property name="robot_root" value="base_link" />
     <xacro:property name="lifter_bottom_link" value="lifter_bottom_link" />
@@ -18,15 +18,13 @@
     <xacro:property name="upper_base_link" value="waist_link" />
     
     <xacro:property name="larm_base_link" value="l_arm_link" />
-    <xacro:property name="larm_tip_link" value="l_wrist_r_link" />
+    <xacro:property name="larm_tip_link" value="l_wrist_p_link" />
     <xacro:property name="lhand_base_link" value="l_hand_link" />
 
     <xacro:property name="rarm_base_link" value="r_arm_link" />
-    <xacro:property name="rarm_tip_link" value="r_wrist_r_link" />
+    <xacro:property name="rarm_tip_link" value="r_wrist_p_link" />
     <xacro:property name="rhand_base_link" value="r_hand_link" />
-    
 
-    
     <xacro:typeg-mover
        base_link="${robot_root}"
        top_link="${mover_top_link}"/>
@@ -70,10 +68,10 @@
     <joint name="r_wrist_to_hand_connector" type="fixed">
         <parent link="${rarm_tip_link}" />
         <child link="${rhand_base_link}" />
-        <origin xyz="0 0 -0.004" rpy="0 0 0 " />
+        <origin xyz="0 0 -0.0435" rpy="0 0 0 " />
     </joint>
 
-    <xacro:trx_s prefix="r" type="right" base_link="${rhand_base_link}"/>
+    <xacro:airoa_hand prefix="r" base_link="${rhand_base_link}"/>
     
     <xacro:typeg-larm base_link="${larm_base_link}" tip_link="${larm_tip_link}"/>
 
@@ -86,12 +84,10 @@
     <joint name="l_wrist_to_hand_connector" type="fixed">
         <parent link="${larm_tip_link}" />
         <child link="${lhand_base_link}" />
-        <origin xyz="0 0 -0.004" rpy="0 0 0 " />
+        <origin xyz="0 0 -0.0435" rpy="0 0 0 " />
     </joint>
-   
-   
-    <xacro:trx_s prefix="l" type="left" base_link="${lhand_base_link}"/>
-    
+
+    <xacro:airoa_hand prefix="l" base_link="${lhand_base_link}"/>
 
     <xacro:include filename="$(find noid_lifter_mover)/model/noid_lifter_mover.ros2_control.xacro" />
     <xacro:noid_lifter_mover_ros2_control name="noid_lifter_mover" driver_settings="$(arg driver_settings)" />

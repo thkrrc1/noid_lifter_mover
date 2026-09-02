@@ -25,10 +25,10 @@ mechanum_controller:
                max_acceleration: 1.5
                max_jerk: 25.0
       time:
-         cmd_vel_timeout: 0.2 #[s]
-         teleop_sub_timeout: 0.1 #[s]        
+         cmd_vel_timeout: 2.0 #[s]
+         teleop_sub_timeout: 1.0 #[s]
       encoder_reset:
-         enable: true  #encoder reset      
+         enable: false  #encoder reset      
          msid: 2       #mover   
 
 diagnostic_controller:
@@ -47,10 +47,9 @@ robotstatus_controller:
    ros__parameters:
       type: "aero_controller/RobotStatusController"
 
-motion_player:
+current_controller:
    ros__parameters:
-      type: "motion_player/MotionPlayer"
-            
+      type: "aero_controller/CurrentController"
       
 config_controller:
    ros__parameters:
